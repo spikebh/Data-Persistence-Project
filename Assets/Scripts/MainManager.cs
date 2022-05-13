@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -15,11 +16,13 @@ public class MainManager : MonoBehaviour
     public GameObject GameOverText;
 
     private bool m_Started = false;
-    private int m_Points;
+    public int m_Points;
+    public int old_Points;
 
     private bool m_GameOver = false;
     //public static MainManager Instance;
     public string playerName;
+    public string bestPlayerName;
 
 
     // Start is called before the first frame update
@@ -28,7 +31,8 @@ public class MainManager : MonoBehaviour
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         playerName = MenuManager.Instance.playerName;
-        upperText.text = $"Best Score : {playerName} : 0";
+        LoadScore();
+        upperText.text = $"Best Score : {bestPlayerName} : {old_Points}";
 
         int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
@@ -77,7 +81,39 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_Points > old_Points) SaveScore();
     }
 
+    [System.Serializable]
+    class SaveData
+    {
+        public string highScoreName;
+        public string highScorePoints;
 
+    }
+
+    public void SaveScore()
+    {
+        SaveData data = new SaveData();
+        data.highScoreName = MenuManager.Instance.playerName;
+        data.highScorePoints = $"{m_Points}";
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void LoadScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            old_Points = int.Parse(data.highScorePoints);
+            bestPlayerName = data.highScoreName;
+        }
+
+    }
 }
