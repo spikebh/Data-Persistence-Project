@@ -20,7 +20,6 @@ public class MainManager : MonoBehaviour
     public int old_Points;
 
     private bool m_GameOver = false;
-    //public static MainManager Instance;
     public string playerName;
     public string bestPlayerName;
 
